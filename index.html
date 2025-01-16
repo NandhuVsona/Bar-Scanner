@@ -51,7 +51,7 @@
 </head>
 <body>
   <h1>Barcode Scanner</h1>
-  <video id="barcode-scanner" width="300" height="200"></video>
+  <video id="barcode-scanner" width="300" height="200" autoplay></video>
   <p>Barcode Result: <span id="barcode-result">N/A</span></p>
   <div id="controls">
     <button id="start-scan">Start Scan</button>
@@ -81,6 +81,7 @@
         function (err) {
           if (err) {
             console.error("Error initializing scanner:", err);
+            alert("Failed to initialize barcode scanner. Check the console for details.");
             return;
           }
           console.log("Barcode scanner initialized.");
@@ -88,8 +89,16 @@
         }
       );
 
+      Quagga.onProcessed(function (result) {
+        const drawingCanvas = Quagga.canvas.dom.overlay;
+        if (drawingCanvas) {
+          drawingCanvas.style.display = "block";
+        }
+      });
+
       Quagga.onDetected(function (data) {
         barcodeResult.textContent = data.codeResult.code;
+        console.log("Barcode detected:", data.codeResult.code);
       });
     }
 
