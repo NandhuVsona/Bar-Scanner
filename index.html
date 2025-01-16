@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barcode Scanner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    #barcode-scanner {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+    #controls {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+    #barcode-result {
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Barcode Scanner</h1>
+  <video id="barcode-scanner" width="300" height="200"></video>
+  <p>Barcode Result: <span id="barcode-result">N/A</span></p>
+  <div id="controls">
+    <button id="start-scan">Start Scan</button>
+    <button id="cancel-scan" disabled>Cancel Scan</button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <script>
+    const startButton = document.getElementById("start-scan");
+    const cancelButton = document.getElementById("cancel-scan");
+    const barcodeResult = document.getElementById("barcode-result");
+
+    function initializeScanner() {
+      Quagga.init(
+        {
+          inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector("#barcode-scanner"),
+            constraints: {
+              facingMode: "environment",
+            },
+          },
+          decoder: {
+            readers: ["code_128_reader", "ean_reader", "ean_8_reader"],
+          },
+        },
+        function (err) {
+          if (err) {
+            console.error("Error initializing scanner:", err);
+            return;
+          }
+          console.log("Barcode scanner initialized.");
+          Quagga.start();
+        }
+      );
+
+      Quagga.onDetected(function (data) {
+        barcodeResult.textContent = data.codeResult.code;
+      });
+    }
+
+    function stopScanner() {
+      Quagga.stop();
+      barcodeResult.textContent = "N/A";
+      console.log("Scanner stopped.");
+    }
+
+    startButton.addEventListener("click", () => {
+      initializeScanner();
+      startButton.disabled = true;
+      cancelButton.disabled = false;
+    });
+
+    cancelButton.addEventListener("click", () => {
+      stopScanner();
+      startButton.disabled = false;
+      cancelButton.disabled = true;
+    });
+  </script>
+</body>
+</html>
